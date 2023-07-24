@@ -1,0 +1,19 @@
+C:\Users\cz199\PycharmProjects\ASLRF-TensorFlow-Lite\venv\Scripts\python.exe C:\Users\cz199\PycharmProjects\ASLRF-TensorFlow-Lite\proprocessing\proprocessing_dataset.py 
+N_UNIQUE_CHARACTERS: 59
+N_SAMPLES: 67208
+MAX_PHRASE_LENGTH: 31
+N_UNIQUE_CHARACTERS: 59
+# Unique Recording: 1000
+N_COLS0: 8355
+N_COLS: 8355
+2023-07-24 21:26:44.740745: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: SSE SSE2 SSE3 SSE4.1 SSE4.2 AVX AVX2 AVX_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+inputs shape: (1, 8355)
+frames shape: (128, 8355), NaN count: 0
+Traceback (most recent call last):
+  File "C:\Users\cz199\PycharmProjects\ASLRF-TensorFlow-Lite\proprocessing\proprocessing_dataset.py", line 427, in <module>
+    X = np.zeros([N_SAMPLES, N_TARGET_FRAMES, N_COLS], dtype=np.float32)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+numpy.core._exceptions._ArrayMemoryError: Unable to allocate 268. GiB for an array with shape (67208, 128, 8355) and data type float32
+
+Process finished with exit code 1

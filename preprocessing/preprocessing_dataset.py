@@ -38,6 +38,7 @@ print(f'N_UNIQUE_CHARACTERS: {N_UNIQUE_CHARACTERS}')
 # [4]
 # If Notebook Is Run By Committing or In Interactive Mode For Development
 # IS_INTERACTIVE = os.environ['KAGGLE_KERNEL_RUN_TYPE'] == 'Interactive'
+IS_INTERACTIVE = 0
 # Describe Statistics Percentiles
 PERCENTILES = [0.01, 0.10, 0.05, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 0.999]
 # Global Random Seed
@@ -52,6 +53,9 @@ FAST = False
 N_UNIQUE_CHARACTERSPAD_TOKEN = len(CHAR2ORD)
 SOS_TOKEN = len(CHAR2ORD) + 1  # Start Of Sentence
 EOS_TOKEN = len(CHAR2ORD) + 2  # End Of Sentence
+
+# [calv] [4]
+N_CUSTOM = 10
 
 # [5]
 # MatplotLib Global Settings
@@ -149,14 +153,15 @@ train_sequence_id = train.set_index('sequence_id')
 UNIQUE_CHARACTERS = set()
 
 # for phrase in tqdm(train['phrase_char']):
-#     for c in phrase:
-#         UNIQUE_CHARACTERS.add(c)
+for phrase in train['phrase_char']:
+    for c in phrase:
+        UNIQUE_CHARACTERS.add(c)
 
 # Sorted Unique Character
-# UNIQUE_CHARACTERS = np.array(sorted(UNIQUE_CHARACTERS))
+UNIQUE_CHARACTERS = np.array(sorted(UNIQUE_CHARACTERS))
 # Number of Unique Characters
-# N_UNIQUE_CHARACTERS = len(UNIQUE_CHARACTERS)
-# print(f'N_UNIQUE_CHARACTERS: {N_UNIQUE_CHARACTERS}')
+N_UNIQUE_CHARACTERS = len(UNIQUE_CHARACTERS)
+print(f'N_UNIQUE_CHARACTERS: {N_UNIQUE_CHARACTERS}')
 
 # [14]
 # Read First Parquet File
@@ -170,18 +175,20 @@ print(f'# Unique Recording: {example_parquet_df.index.nunique()}')
 # [15]
 # Number of parquet chunks to analyse
 # N = 5 if IS_INTERACTIVE else 25
+N = N_CUSTOM
 # Number of Unique Frames in Recording
-# N_UNIQUE_FRAMES = []
+N_UNIQUE_FRAMES = []
 
-# UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
+UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
 
 # for idx, file_path in enumerate(tqdm(UNIQUE_FILE_PATHS.sample(N, random_state=SEED))):
-#     df = pd.read_parquet(file_path)
-#     for group, group_df in df.groupby('sequence_id'):
-#         N_UNIQUE_FRAMES.append(group_df['frame'].nunique())
+for idx, file_path in enumerate(UNIQUE_FILE_PATHS[0:(N - 1)]):
+    df = pd.read_parquet(file_path)
+    for group, group_df in df.groupby('sequence_id'):
+        N_UNIQUE_FRAMES.append(group_df['frame'].nunique())
 
 # Convert to Numpy Array
-# N_UNIQUE_FRAMES = np.array(N_UNIQUE_FRAMES)
+N_UNIQUE_FRAMES = np.array(N_UNIQUE_FRAMES)
 
 # [16]
 # Number of unique frames in each video
@@ -300,7 +307,7 @@ class PreprocessLayerNonNaN(tf.keras.layers.Layer):
         super(PreprocessLayerNonNaN, self).__init__()
 
     @tf.function(
-        input_signature=(tf.TensorSpec(shape=[None, N_COLS0], dtype=tf.float32),),
+        input_signature=(tf.TensorSpec(shape=[None, N_COLS0], dtype=tf.float32), ),
     )
     def call(self, data0):
         # Fill NaN Values With 0
@@ -324,20 +331,22 @@ preprocess_layer_non_nan = PreprocessLayerNonNaN()
 
 # [23]
 # Unique Parquet Files
-# UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
+UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
 # Number of parquet chunks to analyse
 # N = 5 if (IS_INTERACTIVE or FAST) else len(UNIQUE_FILE_PATHS)
+N = N_CUSTOM
 # Number of Non Nan Frames in Recording
-# N_NON_NAN_FRAMES = []
+N_NON_NAN_FRAMES = []
 
 # for idx, file_path in enumerate(tqdm(UNIQUE_FILE_PATHS.sample(N, random_state=SEED))):
-#     df = pd.read_parquet(file_path)
-#     for group, group_df in df.groupby('sequence_id'):
-#         frames = preprocess_layer_non_nan(group_df[COLUMNS0].values).numpy()
-#         N_NON_NAN_FRAMES.append(len(frames))
+for idx, file_path in enumerate(UNIQUE_FILE_PATHS[0:(N - 1)]):
+    df = pd.read_parquet(file_path)
+    for group, group_df in df.groupby('sequence_id'):
+        frames = preprocess_layer_non_nan(group_df[COLUMNS0].values).numpy()
+        N_NON_NAN_FRAMES.append(len(frames))
 
 # Convert to Numpy Array
-# N_NON_NAN_FRAMES = pd.Series(N_NON_NAN_FRAMES).to_frame('# Frames')
+N_NON_NAN_FRAMES = pd.Series(N_NON_NAN_FRAMES).to_frame('# Frames')
 
 # [24]
 # Number of frames in each video with hand coordinates
@@ -405,13 +414,13 @@ class PreprocessLayer(tf.keras.layers.Layer):
 
 preprocess_layer = PreprocessLayer()
 
-# inputs = group_df[COLUMNS0].values
-# inputs = inputs[:1]
+inputs = group_df[COLUMNS0].values
+inputs = inputs[:1]
 
-# frames = preprocess_layer(inputs)
+frames = preprocess_layer(inputs)
 
-# print(f'inputs shape: {inputs.shape}')
-# print(f'frames shape: {frames.shape}, NaN count: {np.isnan(frames).sum()}')
+print(f'inputs shape: {inputs.shape}')
+print(f'frames shape: {frames.shape}, NaN count: {np.isnan(frames).sum()}')
 
 # [26]
 # Target Arrays Processed Input Videos

@@ -204,7 +204,7 @@ N_UNIQUE_FRAMES = np.array(N_UNIQUE_FRAMES)
 # plt.show()
 
 # [17]
-# With N_TARGET_FRAMES = 256 ~85% will be below
+# With N_TARGET_FRAMES = 256 ~ 85% will be below
 # N_UNIQUE_FRAMES_WATERFALL = []
 # Maximum Number of Unique Frames to use
 # N_MAX_UNIQUE_FRAMES = 400
@@ -564,7 +564,7 @@ def get_left_right_hand_mean_std():
         #     ax.tick_params(axis='x', labelsize=8, rotation=45)
         #     ax.set_ylim(0.0, 1.0)
         #     ax.grid(axis='y')
-        #
+        
         # plt.show()
 
         return MEANS, STDS

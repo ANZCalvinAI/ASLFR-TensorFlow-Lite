@@ -5,7 +5,7 @@ import pandas as pd
 # import matplotlib as mpl
 import tensorflow as tf
 
-from tqdm.notebook import tqdm
+# from tqdm.notebook import tqdm
 from sklearn.model_selection import GroupShuffleSplit
 from pathlib import Path
 
@@ -16,9 +16,9 @@ import json
 import re
 
 # TQDM Progress Bar With Pandas Apply Function
-tqdm.pandas()
+# tqdm.pandas()
 
-# [calv] [1]
+# [calv local] [1]
 path_project = os.path.abspath('..')
 path_dataset = os.path.join(path_project, 'datasets/asl-fingerspelling')
 
@@ -53,9 +53,6 @@ FAST = False
 N_UNIQUE_CHARACTERSPAD_TOKEN = len(CHAR2ORD)
 SOS_TOKEN = len(CHAR2ORD) + 1  # Start Of Sentence
 EOS_TOKEN = len(CHAR2ORD) + 2  # End Of Sentence
-
-# [calv] [4]
-N_CUSTOM = 10
 
 # [5]
 # MatplotLib Global Settings
@@ -115,7 +112,9 @@ train['phrase_type'] = train['phrase'].apply(get_phrase_type)
 # [9]
 # Get complete file path to file
 def get_file_path(path):
-    return os.path.join(path_dataset, path)
+    file_path = os.path.join(path_dataset, 'train_landmarks')
+    file_path = os.path.join(file_path, path)
+    return file_path
 
 
 train['file_path'] = train['path'].apply(get_file_path)
@@ -165,24 +164,67 @@ print(f'N_UNIQUE_CHARACTERS: {N_UNIQUE_CHARACTERS}')
 
 # [14]
 # Read First Parquet File
-example_parquet_df = pd.read_parquet(train['file_path'][0])
+# example_parquet_df = pd.read_parquet(train['file_path'][0])
+
+# Each parquet file contains 1000 recordings
+# print(f'# Unique Recording: {example_parquet_df.index.nunique()}')
+# Display DataFrame layout
+# display(example_parquet_df.head())
+
+# [calv local]
+# Read First Parquet File
+example_parquet_df = pd.read_parquet(get_file_path('5414471.parquet'))
 
 # Each parquet file contains 1000 recordings
 print(f'# Unique Recording: {example_parquet_df.index.nunique()}')
-# Display DataFrame layout
-# display(example_parquet_df.head())
 
 # [15]
 # Number of parquet chunks to analyse
 # N = 5 if IS_INTERACTIVE else 25
-N = N_CUSTOM
+# Number of Unique Frames in Recording
+# N_UNIQUE_FRAMES = []
+
+# UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
+
+# for idx, file_path in enumerate(tqdm(UNIQUE_FILE_PATHS.sample(N, random_state=SEED))):
+#     df = pd.read_parquet(file_path)
+#     for group, group_df in df.groupby('sequence_id'):
+#         N_UNIQUE_FRAMES.append(group_df['frame'].nunique())
+
+# Convert to Numpy Array
+# N_UNIQUE_FRAMES = np.array(N_UNIQUE_FRAMES)
+
+# [calv local] [15]
+# Number of parquet chunks to analyse
+# N = 5 if IS_INTERACTIVE else 25
 # Number of Unique Frames in Recording
 N_UNIQUE_FRAMES = []
 
-UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
+UNIQUE_FILE_PATHS = pd.Series([
+    get_file_path('5414471.parquet'),
+    get_file_path('105143404.parquet'),
+    get_file_path('128822441.parquet'),
+    get_file_path('149822653.parquet'),
+    get_file_path('152029243.parquet'),
+    get_file_path('169560558.parquet'),
+    get_file_path('175396851.parquet'),
+    get_file_path('234418913.parquet'),
+    get_file_path('296317215.parquet'),
+    get_file_path('349393104.parquet'),
+    get_file_path('388576474.parquet'),
+    get_file_path('425182931.parquet'),
+    get_file_path('433948159.parquet'),
+    get_file_path('450474571.parquet'),
+    get_file_path('474255203.parquet'),
+    get_file_path('495378749.parquet'),
+    get_file_path('522550314.parquet'),
+    get_file_path('527708222.parquet'),
+    get_file_path('532011803.parquet'),
+    get_file_path('546816846.parquet')
+])
 
 # for idx, file_path in enumerate(tqdm(UNIQUE_FILE_PATHS.sample(N, random_state=SEED))):
-for idx, file_path in enumerate(UNIQUE_FILE_PATHS[0:(N - 1)]):
+for idx, file_path in enumerate(UNIQUE_FILE_PATHS):
     df = pd.read_parquet(file_path)
     for group, group_df in df.groupby('sequence_id'):
         N_UNIQUE_FRAMES.append(group_df['frame'].nunique())
@@ -204,7 +246,7 @@ N_UNIQUE_FRAMES = np.array(N_UNIQUE_FRAMES)
 # plt.show()
 
 # [17]
-# With N_TARGET_FRAMES = 256 ~ 85% will be below
+# With N_TARGET_FRAMES = 256 ~85% will be below
 # N_UNIQUE_FRAMES_WATERFALL = []
 # Maximum Number of Unique Frames to use
 # N_MAX_UNIQUE_FRAMES = 400
@@ -331,15 +373,32 @@ preprocess_layer_non_nan = PreprocessLayerNonNaN()
 
 # [23]
 # Unique Parquet Files
-UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
+# UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
 # Number of parquet chunks to analyse
 # N = 5 if (IS_INTERACTIVE or FAST) else len(UNIQUE_FILE_PATHS)
-N = N_CUSTOM
+# Number of Non Nan Frames in Recording
+# N_NON_NAN_FRAMES = []
+
+# for idx, file_path in enumerate(tqdm(UNIQUE_FILE_PATHS.sample(N, random_state=SEED))):
+#     df = pd.read_parquet(file_path)
+#     for group, group_df in df.groupby('sequence_id'):
+#         frames = preprocess_layer_non_nan(group_df[COLUMNS0].values).numpy()
+#         N_NON_NAN_FRAMES.append(len(frames))
+
+# Convert to Numpy Array
+# N_NON_NAN_FRAMES = pd.Series(N_NON_NAN_FRAMES).to_frame('# Frames')
+
+# [calv local] [23]
+# Unique Parquet Files
+# UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
+UNIQUE_FILE_PATHS = UNIQUE_FILE_PATHS
+# Number of parquet chunks to analyse
+# N = 5 if (IS_INTERACTIVE or FAST) else len(UNIQUE_FILE_PATHS)
 # Number of Non Nan Frames in Recording
 N_NON_NAN_FRAMES = []
 
 # for idx, file_path in enumerate(tqdm(UNIQUE_FILE_PATHS.sample(N, random_state=SEED))):
-for idx, file_path in enumerate(UNIQUE_FILE_PATHS[0:(N - 1)]):
+for idx, file_path in enumerate(UNIQUE_FILE_PATHS):
     df = pd.read_parquet(file_path)
     for group, group_df in df.groupby('sequence_id'):
         frames = preprocess_layer_non_nan(group_df[COLUMNS0].values).numpy()
@@ -432,7 +491,8 @@ y_phrase_type = np.empty(shape=[N_SAMPLES], dtype=object)
 
 # [27]
 # All Unique Parquet Files
-UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
+# UNIQUE_FILE_PATHS = pd.Series(train['file_path'].unique())
+UNIQUE_FILE_PATHS = UNIQUE_FILE_PATHS
 N_UNIQUE_FILE_PATHS = len(UNIQUE_FILE_PATHS)
 # Counter to keep track of sample
 row = 0
@@ -446,7 +506,8 @@ MIN_NUM_FRAMES_PER_CHARACTER = 4
 VALID_IDXS = []
 
 # Fill Arrays
-for idx, file_path in enumerate(tqdm(UNIQUE_FILE_PATHS)):
+# for idx, file_path in enumerate(tqdm(UNIQUE_FILE_PATHS)):
+for idx, file_path in enumerate(UNIQUE_FILE_PATHS):
     # Progress Logging
     print(f'Processed {idx:02d}/{N_UNIQUE_FILE_PATHS} parquet files')
     # Read parquet file
@@ -547,7 +608,8 @@ def get_left_right_hand_mean_std():
     # fig, axes = plt.subplots(3, figsize=(20, 3 * 8))
 
     # Iterate over all landmarks
-    for col, v in enumerate(tqdm(X.reshape([-1, N_COLS]).T)):
+    # for col, v in enumerate(tqdm(X.reshape([-1, N_COLS]).T)):
+    for col, v in enumerate(X.reshape([-1, N_COLS]).T):
         v = v[np.nonzero(v)]
         # Remove zero values as they are NaN values
         MEANS[col] = v.astype(np.float32).mean()
@@ -564,7 +626,7 @@ def get_left_right_hand_mean_std():
         #     ax.tick_params(axis='x', labelsize=8, rotation=45)
         #     ax.set_ylim(0.0, 1.0)
         #     ax.grid(axis='y')
-        
+        #
         # plt.show()
 
         return MEANS, STDS
